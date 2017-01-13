@@ -1,0 +1,14 @@
+---
+ - hosts: 172.31.28.205
+   user: root
+   tasks:
+    - name: copyin repo file
+      copy: src=/root/Desktop/test.repo dest=/etc/yum.repos.d/test.repo
+    - name: installing httpd
+      action: yum name=httpd state=installed
+    - name: copying index.html
+      copy: src=/root/Desktop/index.html dest=/var/www/html/index.html
+    - name: start apache
+      service:
+       name: httpd
+state: restarted
