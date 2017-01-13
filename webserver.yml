@@ -11,4 +11,4 @@
     - name: start apache
       service:
        name: httpd
-state: restarted
+       state: restarted
