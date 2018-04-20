@@ -1,0 +1,79 @@
+---
+- name: "Local home directory creation for Solaris 11 refer connectme page https://connectme.apple.com/docs/DOC-1251860" 
+  hosts: all
+  tasks:
+      - name: "zfs create" 
+        command: /usr/sbin/zfs create -o reservation=5g -o quota=5g -o mountpoint=/home rpool/home  
+      - name: "verifying rpool/home setup"
+        command: /usr/sbin/zfs list rpool/home
+        register: zfs
+      - debug: var=zfs.stdout_lines
+      - name: "setting up quota 5M"
+        command: /usr/sbin/zfs set userquota@sansax=5m rpool/home 
+      - name: "verifying quota setup"
+        command: /usr/sbin/zfs get userquota@sansax rpool/home  
+        register: zfs
+      - debug: var=zfs.stdout_lines
+      - name: "creating sub directories"
+        file:
+          path: '/home/{{item.dest}}'
+          mode: '{{item.mode}}'
+          state: directory
+        with_items:
+          - { dest: 'aps' , mode: '0777'}
+          - { dest: 'dba' , mode: '0777'}
+          - { dest: 'devo' , mode: '0777'}
+          - { dest: 'gcs' , mode: '0777'}
+          - { dest: 'ops' , mode: '0777'}
+          - { dest: 'prod' , mode: '0777'}
+          - { dest: 'seadmin' , mode: '0777'}
+      - name: " backup of /etc/profile and editing it"
+        lineinfile:
+          path: /etc/profile
+          insertafter: 'EOF'
+          line: '/usr/local/sysadm/scripts/mkhomedir;cd $HOME' 
+          backup: yes
+      - name: "checking existence of /usr/local/sysadm/scripts/"
+        file: 
+          dest: /usr/local/sysadm/scripts/ 
+          state: directory
+      - name: "copying quota script in /usr/local/sysadm/scripts"
+        copy: 
+          src: /Users/anuj924066/Desktop/copy-quota-zfs
+          dest: /usr/local/sysadm/scripts/ 
+          mode: 0755
+      - name: "copying mkhomedir script in /usr/local/sysadm/scripts"
+        copy:
+          src: /Users/anuj924066/Desktop/mkhomedir
+          dest: /usr/local/sysadm/scripts/
+          mode: 0755
+      - name: "commentout entries in auto_master"
+        lineinfile:
+          path: /etc/auto_master
+          regexp: '^/home'
+          insertafter: '^/home'
+          line: '###/home           auto_home       -nobrowse'
+      - name: "commentout entries in auto_home"
+        lineinfile:
+          path: /etc/auto_home
+          regexp: 'auto_home'
+          insertafter: 'EOF'
+          line: '###+auto_home'
+      - name: "Autofs service restart" 
+        command: /usr/sbin/svcadm restart  svc:/system/filesystem/autofs  
+      - name: "service status" 
+        command: /usr/bin/svcs svc:/system/filesystem/autofs 
+        register: svcs
+      - debug: var=svcs.stdout_lines
+      - name: "editing crontab"
+        blockinfile:
+          dest: /var/spool/cron/crontabs/root
+          backup: yes
+          marker: ""
+          block: |
+            ################################################
+
+            * * * * *  /usr/local/sysadm/scripts/copy-quota-zfs > /dev/null 2>&1 
+
+            ################################################
+...
