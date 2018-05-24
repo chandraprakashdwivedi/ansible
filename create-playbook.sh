@@ -16,5 +16,6 @@ for i in ${roles[@]}; do
   for j in ${directories[@]}; do
     mkdir -p roles/${i}/${j}
   done
+touch  roles/${i}/{handlers,tasks}/main.yml
 done
 exit 0
