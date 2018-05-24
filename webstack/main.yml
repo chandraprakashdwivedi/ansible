@@ -1,0 +1,26 @@
+---
+
+- hosts: all
+  gather_facts: false
+  tasks:
+
+- name: apply common configuration
+  hosts: all
+  user: ansadm
+  become: yes
+  become_method: sudo
+  tasks:
+
+  roles:
+    - common
+
+
+- name: install and configure apache server
+  hosts: all
+  user: ansadm
+  become: yes
+  become_method: sudo
+  tasks: 
+
+  roles:
+   - web
