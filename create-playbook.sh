@@ -11,7 +11,7 @@ directories=(tasks handlers files templates)
 
 # create playbook
 mkdir $playbook/roles
-mkdir $playbook/global_vars
+mkdir $playbook/group_vars
 touch $playbook/global_vars/all
 touch $playbook/{hosts,main.yml,README.md}
 

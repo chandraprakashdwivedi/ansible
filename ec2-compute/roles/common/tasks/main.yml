@@ -1,0 +1,60 @@
+---
+ - name: setting up security/Firewall Group
+   ec2_group: 
+        name: "{{ ec2.security_group }}"
+        description: Rules to allow traffic on port 22 and port 80
+        region: "{{ ec2.region }}"
+        aws_access_key: "{{ ec2.AWS_ACCESS_KEY_ID }}"
+        aws_secret_key: "{{ ec2.AWS_SECRET_ACCESS_KEY }}"
+        rules:
+         - proto: tcp
+           from_port: 80
+           to_port: 80
+           cidr_ip: 0.0.0.0/0
+         - proto: tcp
+           from_port: 22
+           to_port: 22
+           cidr_ip: 0.0.0.0/0
+        rules_egress:
+         - proto: all
+           cidr_ip: 0.0.0.0/0
+   register: firewall 
+
+ - name: Create an EC2 key
+   ec2_key:
+    aws_access_key: "{{ ec2.AWS_ACCESS_KEY_ID }}"
+    aws_secret_key: "{{ ec2.AWS_SECRET_ACCESS_KEY }}"
+    name: "{{ ec2.key}}"
+    region: "{{ ec2.region }}"
+   register: ec2_key
+ - debug: var=ec2_key
+
+ - name: Save private key
+   copy: content="{{ ec2_key.key.private_key }}" dest="/root/Desktop/aws-key.pem" mode=0600
+   when: ec2_key.changed
+   register: key_path
+ - debug: var=key_path
+
+ - name: Provision a EC2 Instance
+   ec2:
+     key_name: "{{ ec2.key }}"
+    # keypair: "{{ ec2.credential }}"  #this will generate new keypair
+     instance_type: "{{ ec2.instance_type }}"
+     region: "{{ ec2.region }}"
+     image: "{{ec2.image}}"
+     wait: yes
+     wait_timeout: 500
+     count: "{{ ec2.count }}"
+     instance_tags: "{{ ec2.tags }}"
+     monitoring: no
+     vpc_subnet_id: "{{ ec2.subnet }}"
+     assign_public_ip: yes
+     group: "{{ ec2.security_group }}"
+     volumes: "{{ ec2.volumes }}"
+     aws_access_key: "{{ ec2.AWS_ACCESS_KEY_ID }}"
+     aws_secret_key: "{{ ec2.AWS_SECRET_ACCESS_KEY }}"
+   register: ec2_out
+
+ - name: wait for ssh to come up
+   wait_for: host={{ item.public_dns_name }} port=22 delay=60 timeout=320 state=started
+   with_items: "{{ ec2_out.instances }}"  
