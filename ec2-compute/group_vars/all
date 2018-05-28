@@ -15,5 +15,5 @@ ec2:
           volume_type: gp2
           volume_size: 10
           delete_on_termination: True   
-  AWS_ACCESS_KEY_ID: AKIAJPRFKEQIPR3NIPUQ
-  AWS_SECRET_ACCESS_KEY: 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
+  AWS_ACCESS_KEY_ID: 
+  AWS_SECRET_ACCESS_KEY: 
