@@ -9,7 +9,7 @@ ec2:
   tags:
     Name: awslabserver
     Owner: cp
-  subnet: subnet-db8ae8b3
+  subnet: 
   volumes:
         - device_name: /dev/sda1
           volume_type: gp2
