@@ -1,0 +1,17 @@
+---
+-  name: lets play
+   hosts: all 
+   user: user1
+   gather_facts: false
+
+   tasks:
+     - name: testing command
+       become: true
+       become_method: su
+       become_user: other_user
+       become_pass: true
+       command: whoami 
+       register: data
+     - debug: var=data.stdout_lines 
+
+...
