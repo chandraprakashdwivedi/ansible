@@ -1,0 +1,22 @@
+Some ssh changes to proxy pass the ansible host
+
+
+#[user]
+Host r???-machine*.google.com
+User cp
+ProxyCommand ssh -W %h:%p centralmachine.com
+
+or in new ssh version its proxyjump
+
+
+Host *.domain.com
+        User cp
+        #ProxyJump centralmachine1.domain.com
+        ProxyJump centralmachine2.domain.com
+       
+================
+
+To limit the number of fork while running ansible
+
+ansible-playbook myplay.yml --fork 10
+
